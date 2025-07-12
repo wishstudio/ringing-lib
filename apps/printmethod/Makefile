@@ -2,8 +2,9 @@ TOPDIR := ../..
 include $(TOPDIR)/defaults.mk
 
 ifdef HAVE_TERMCAP
-CXXFLAGS += -DRINGING_USE_TERMCAP=1
-LDLIBS += -ltermcap -lncurses
+CPPFLAGS += -DRINGING_USE_TERMCAP=1 $(TERMCAP_INCLUDES)
+LDFLAGS += $(TERMCAP_LDFLAGS)
+LDLIBS += $(TERMCAP_LIBS)
 endif
 
 BINARY := printmethod

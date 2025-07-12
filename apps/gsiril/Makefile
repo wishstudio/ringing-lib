@@ -7,8 +7,9 @@ SOURCES := main.cpp execution_context.cpp expr_base.cpp proof_context.cpp \
   import.cpp functions.cpp 
 
 ifdef HAVE_TERMCAP
-CPPFLAGS += -DRINGING_USE_TERMCAP=1
-LDLIBS += -ltermcap -lncurses
+CPPFLAGS += -DRINGING_USE_TERMCAP=1 $(TERMCAP_INCLUDES)
+LDFLAGS += $(TERMCAP_LDFLAGS)
+LDLIBS += $(TERMCAP_LIBS)
 endif
 
 include $(TOPDIR)/build/bin.mk
