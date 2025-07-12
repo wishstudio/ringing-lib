@@ -2,7 +2,7 @@ CPPFLAGS += -I$(TOPDIR) -I$(TOPDIR)/utils
 LDFLAGS += -L$(TOPDIR)/ringing -L$(TOPDIR)/utils
 LDLIBS += -lringingcore -lringing -lringingutils
 
-include $(TOPDIR)/buildrules.mk
+include $(TOPDIR)/build/compile.mk
 
 all::	$(BINARY)
 

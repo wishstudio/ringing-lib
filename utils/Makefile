@@ -20,4 +20,4 @@ CPPFLAGS += -DRINGING_USE_TERMCAP=1
 LDLIBS += -ltermcap -lncurses
 endif
 
-include $(TOPDIR)/buildlib.mk
+include $(TOPDIR)/build/lib.mk

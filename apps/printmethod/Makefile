@@ -9,4 +9,4 @@ endif
 BINARY := printmethod
 SOURCES := main.cpp
 
-include $(TOPDIR)/buildbin.mk
+include $(TOPDIR)/build/bin.mk

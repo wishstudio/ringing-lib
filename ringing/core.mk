@@ -29,4 +29,4 @@ endif
 endif
 
 MAKEFILE=core.mk
-include $(TOPDIR)/buildlib.mk
+include $(TOPDIR)/build/lib.mk

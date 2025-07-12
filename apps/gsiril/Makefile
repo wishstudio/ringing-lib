@@ -11,7 +11,7 @@ CPPFLAGS += -DRINGING_USE_TERMCAP=1
 LDLIBS += -ltermcap -lncurses
 endif
 
-include $(TOPDIR)/buildbin.mk
+include $(TOPDIR)/build/bin.mk
 
 init.dat:	escape.awk init/gsiril.init
 	awk -f escape.awk init/gsiril.init > $@
