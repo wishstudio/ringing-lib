@@ -23,6 +23,7 @@
 #endif
 
 #include <vector>
+#include <cstdint>
 
 #include <ringing/search_base.h>
 #include <ringing/table_search.h>
