@@ -33,7 +33,9 @@
 #include <ringing/touch.h>
 #include <ringing/group.h>
 
+#ifndef DEBUG_LEVEL
 #define DEBUG_LEVEL 0
+#endif
 
 #if DEBUG_LEVEL
 #include <iostream>
