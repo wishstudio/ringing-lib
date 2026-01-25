@@ -1,6 +1,6 @@
 // parser.cpp - Tokenise and parse lines of input
 // Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2010, 2011, 2012, 2013,
-// 2019, 2020, 2021, 2022 Richard Smith <richard@ex-parrot.com>
+// 2019, 2020, 2021, 2022, 2026 Richard Smith <richard@ex-parrot.com>
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -970,6 +970,8 @@ msparser::make_expr( vector< token >::const_iterator first,
 	return expression( new endproof_node() );
       else if ( *first == "proving" )
 	return expression( new isproving_node() );
+      else if ( *first == "nullch" )
+	return expression( new pn_node(1, "1") );
       else
 	return expression( new symbol_node( *first ) );
 
