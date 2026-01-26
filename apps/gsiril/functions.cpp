@@ -243,6 +243,23 @@ expression var_impl::clone() const {
   return expression(new var_impl);
 }
 
+static expression arraylen_impl( proof_context& ctx, 
+                                 vector<expression> const& args ) {
+  if (args.size() != 1)
+    throw runtime_error("The arraylen function takes one argument");
+
+  return expression( new integer_node( args[0].array_evaluate(ctx).size() ) );
+}
+
+static expression arrayof_impl( proof_context& ctx, 
+                                vector<expression> const& args ) {
+  if (args.size() != 2)
+    throw runtime_error("The arrayof function takes two arguments");
+
+  return expression( new array_node( 
+    vector<expression>( args[0].int_evaluate(ctx), args[1] ) ) );
+}
+
 void register_functions( execution_context& ectx )
 {
   ectx.define_symbol( pair< const string, expression >
@@ -289,5 +306,11 @@ void register_functions( execution_context& ectx )
   ectx.define_symbol( pair< const string, expression >
     ( "join", expression( new std_fn_impl("join", expression::no_type,
     join_impl ) ) ) );
+  ectx.define_symbol( pair< const string, expression >
+    ( "arraylen", expression( new std_fn_impl("arraylen", expression::integer,
+    arraylen_impl ) ) ) );
+  ectx.define_symbol( pair< const string, expression >
+    ( "arrayof", expression( new std_fn_impl("arrayof", expression::no_type,
+    arrayof_impl ) ) ) );
 }
 
