@@ -1,6 +1,6 @@
 // parser.cpp - Tokenise and parse lines of input
 // Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2010, 2011, 2012, 2013,
-// 2019, 2020, 2021, 2022 Richard Smith <richard@ex-parrot.com>
+// 2019, 2020, 2021, 2022, 2026 Richard Smith <richard@ex-parrot.com>
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -99,6 +99,12 @@ namespace tok_types
     right_shift,   /* >> */
     regex_lit      /* /.../ */
   };
+
+  bool is_assign(int tok) {
+    return tok == tok_types::assignment ||
+           tok == tok_types::def_assign ||
+           tok == tok_types::imm_assign;
+  }
 }
 
 class pn_impl : public tokeniser::basic_token
@@ -256,9 +262,12 @@ private:
 
   int bells() const { return ectx.bells(); }
 
-  vector< token > tokenise_command();
+  vector<token> tokenise_command();
 
   statement parse_command( vector<token> const& cmd );
+  statement parse_assignment( expression const& lhs, int type,
+                              vector<token>::const_iterator begin,
+                              vector<token>::const_iterator end );
   statement parse_if( expression const& cond );
   statement parse_foreach( vector<token> const& cmd );
 
@@ -453,23 +462,44 @@ statement msparser::parse_command( vector<token> const& cmd ) {
     return parse_foreach(cmd);
 
   // Definition
-  if ( cmd.size() > 1 && cmd[0].type() == tok_types::name
-       && ( cmd[1].type() == tok_types::assignment ||
-            cmd[1].type() == tok_types::def_assign ||
-            cmd[1].type() == tok_types::imm_assign ) ) {
-    expression val( cmd.size() == 2 ? expression( new nop_node )
-                    : make_expr( cmd.begin() + 2, cmd.end() ) );
-    switch ( cmd[1].type() ) {
-      case tok_types::assignment:
-        return statement( new definition_stmt( cmd[0], val ) );
-      case tok_types::def_assign:
-        return statement( new default_defn_stmt( cmd[0], val ) );
-      case tok_types::imm_assign:
-        return statement( new immediate_defn_stmt( cmd[0], val ) );
-    }
-  }
+  if ( cmd.size() >= 2 && cmd[0].type() == tok_types::name
+       && tok_types::is_assign(cmd[1].type()) )
+    return parse_assignment( expression( new symbol_node(cmd[0]) ), 
+                             cmd[1].type(), cmd.begin()+2, cmd.end() );
 
+  // Computed variable definition
+  if ( cmd.size() >= 5 && cmd[0].type() == tok_types::name
+       && cmd[0] == "var" && cmd[1].type() == tok_types::open_paren ) {
+
+    vector<tok_types::enum_t> assigns;
+    assigns.push_back(tok_types::assignment);
+    assigns.push_back(tok_types::def_assign);
+    assigns.push_back(tok_types::imm_assign);
+
+    vector<token>::const_iterator split;
+    if (find_one_of(cmd.begin(), cmd.end(), assigns, split))
+      return parse_assignment( make_expr(cmd.begin(), split), 
+                               split->type(), split+1, cmd.end() );
+  }
+  
   throw runtime_error( "Unknown command: " + cmd[0] + " ..." );
+}
+
+statement msparser::parse_assignment( expression const& lhs, int type,
+                                      vector<token>::const_iterator begin,
+                                      vector<token>::const_iterator end ) {
+  expression val( begin == end ? expression( new nop_node )
+                               : make_expr( begin, end ) );
+  switch (type) {
+    case tok_types::assignment:
+      return statement( new definition_stmt( lhs, val ) );
+    case tok_types::def_assign:
+      return statement( new default_defn_stmt( lhs, val ) );
+    case tok_types::imm_assign:
+      return statement( new immediate_defn_stmt( lhs, val ) );
+    default:
+      throw runtime_error( "Unknown assignment operator" );
+  }
 }
 
 statement msparser::parse_if( expression const& cond1 ) {
@@ -970,6 +1000,8 @@ msparser::make_expr( vector< token >::const_iterator first,
 	return expression( new endproof_node() );
       else if ( *first == "proving" )
 	return expression( new isproving_node() );
+      else if ( *first == "nullch" )
+	return expression( new pn_node(1, "1") );
       else
 	return expression( new symbol_node( *first ) );
 
